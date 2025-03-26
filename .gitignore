@@ -10,7 +10,7 @@ __pycache__/
 .Python
 build/
 develop-eggs/
-dist/
+dist/fnotes
 downloads/
 eggs/
 .eggs/
@@ -172,3 +172,9 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+
+# Custom stuff
+note*
+todo*
+TODO*
