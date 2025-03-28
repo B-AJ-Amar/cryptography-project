@@ -40,7 +40,7 @@ To keep things clean and consistent (like in `playfair_cipher.py`), use `ruff` f
 
 2. **Transposition (Permutation) Ciphers**  
    - [ ] Complex Columnar Transposition  (optional)  
-   - [ ] Polybius Square Transposition  
+   - [x] Polybius Square Transposition  
 
 ### B. Modern Cryptography  
 1. **Secret Key Encryption**  
