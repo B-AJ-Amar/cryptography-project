@@ -52,5 +52,7 @@ To keep things clean and consistent (like in `playfair_cipher.py`), use `ruff` f
    - [ ] Diffie-Hellman (Key Exchange)  (optional)  
    - [ ] Hashing Algorithms (e.g., SHA-256, MD5)  (optional) 
   
-### C. Steganography
-   [x] image
+### C. Steganography  (optional)
+For more details , click [here](./src/steganography/README.md).
+
+- [x] image
