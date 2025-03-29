@@ -48,7 +48,7 @@ To keep things clean and consistent (like in `playfair_cipher.py`), use `ruff` f
    - [ ] AES (Advanced Encryption Standard)  
 
 2. **Public Key Encryption**  
-   - [ ] RSA (Rivest-Shamir-Adleman)  
+   - [x] RSA (Rivest-Shamir-Adleman)  
    - [ ] Diffie-Hellman (Key Exchange)  (optional)  
    - [ ] Hashing Algorithms (e.g., SHA-256, MD5)  (optional) 
 
