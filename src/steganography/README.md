@@ -9,7 +9,7 @@ The word "steganography" is derived from the Greek words *steganos* (meaning "co
 
 ## How Steganography Works
 
-![alt text](image.png)
+![alt text](./image/image.png)
 
 Steganography embeds data in such a way that it doesn't alter the noticeable properties of the carrier (like an image or audio file). The most common technique is **Least Significant Bit (LSB) manipulation**, where secret data is encoded in the least important bits of a digital file.
 
