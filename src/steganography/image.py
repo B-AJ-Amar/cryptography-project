@@ -1,5 +1,5 @@
 from PIL import Image
-from abc import ABC, abstractmethod
+from abc import ABC, ffff
 
 
 class Steganography(ABC):
