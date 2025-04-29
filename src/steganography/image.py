@@ -28,7 +28,7 @@ class SteganographyLSBImage(Steganography):
         file_path: str = "image/3840x2160.png",
         output_path: str = "out.png",
     ) -> None:
-        image, pixels, mode = self.open_file(file_path)
+        image, pixels = self.open_file(file_path)
 
         data_bin = [format(ord(i), "08b") for i in data]
         data_bin.append(self.END)
@@ -96,5 +96,5 @@ class SteganographyLSBImage(Steganography):
 
 if __name__ == "__main__":
     Steganography = SteganographyLSBImage()
-    Steganography.encode("hello world1NFAKJB398=-sn", "image/3840x2160.png", "out.png")
-    print(Steganography.decode("out.txt"))
+    Steganography.encode("Wello world1NFAKJB398=-sn", "image/3840x2160.png", "out.png")
+    print(Steganography.decode("out.png","out.txt"))

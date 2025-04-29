@@ -19,27 +19,175 @@ Note : there are 3 kind of playfair configuration in my implementation :
 TODO : add unicode support
 
 """
+"""
+we should use these classes to organize our code, e.g RSA should inherit from AsymetricCrypto
+"""
+# !!! I GOT A PROBLEM WITH THE IMPORTS SO I HARD CODED EVERY THING
+from abc import ABC
+from typing import Tuple
+
+
+class Crypro(ABC):
+    def encrypt(self, data: str) -> str:
+        pass
+
+    def decrypt(self, data: str) -> str:
+        pass
+
+
+class SymetricCrypto(Crypro):
+    def __init__(self, key):
+        self.key = key
+
+    def generate_key(self) -> str:
+        pass
+
+    def get_key(self) -> str:
+        return self.key
+
+    def set_key(self, key: str):
+        self.key = key
+
+
+class AsymetricCrypto(Crypro):
+    def __init__(self, private_key: str = None, public_key: str = None):
+        if private_key is None and public_key is None:
+            public_key, private_key = self.generate_key()
+        self.private_key = private_key
+        self.public_key = public_key
+
+    def generate_key(self) -> Tuple[str, str]:
+        pass
+
+    def get_public_key(self) -> str:
+        return self.public_key
+
+    def get_private_key(self) -> str:
+        return self.private_key
+
+    def set_key(self, private_key: str, public_key: str):
+        self.private_key = private_key
+        self.public_key = public_key
+
 
 # ? this part will allow me to import from the parent directory
-import sys
-import os
+from abc import ABC
 
-# getting the name of the directory
-# where the this file is present.
-current = os.path.dirname(os.path.realpath(__file__))
+class PlayfairConfig(ABC):
+    def __init__(self, table:list, width:int, height:int, duplicated_char:int, impair_char:int):
+        self.table = table
+        self.max_width = width
+        self.max_height = height
+        self.duplicated_char = duplicated_char
+        self.impair = impair_char
+        
+    def refactor_key(self, key: str) -> list: 
+        """
+        this function will refactor the key to remove duplicates
+        """
+        new = []
+        len_key = len(key)
+        for i in range(len_key):
+            if key[i] not in new:
+                new.append(key[i])
+        return new, len_key
+    
+    def refactor_data(self, data: str) -> str:
+        len_data = len(data)
+        if len_data % 2 != 0:
+            data += self.impair
+            len_data += 1
 
-# Getting the parent directory name
-# where the current directory is present.
-parent = os.path.dirname(current)
+        return list(data), len_data
+    
+    def make_table(self, key: str) -> str:
+        key, _ = self.refactor_key(key)
+        for x in key:
+            self.table.remove(x)
 
-# adding the parent directory to
-# the sys.path.
-sys.path.append(parent)
+        self.table = key + self.table
+    
+
+class DefaultPlayfairConfig(PlayfairConfig):
+    '''this class is the default configuration for the playfair cipher using only uppercase'''
+    def __init__(self, duplicated_char: str='X', impair_char: str='Z'):
+          self.table = [
+                'A', 'B', 'C', 'D', 'E', 
+                'F', 'G', 'H', 'I', 'K', 
+                'L', 'M', 'N', 'O', 'P', 
+                'Q', 'R', 'S', 'T', 'U', 
+                'V', 'W', 'X', 'Y', 'Z'
+          ]
+          self.max_width = 5
+          self.max_height = 5
+          self.impair = impair_char
+          self.duplicated_char = duplicated_char
+    
+    def refactor_key(self, key: str) -> list: 
+        """
+        this function will refactor the key to remove duplicates
+        """
+        key = key.upper().replace("J", "I")
+        new = []
+        len_key = len(key)
+        for i in range(len_key):
+            if key[i] not in new: new.append(key[i])
+        
+        return new, len_key
+    
+    def refactor_data(self, data: str) -> str:
+        data = data.upper().replace("J", "I")
+        data = ''.join([i for i in data if i.isalpha()])
+        len_data = len(data)
+        if len_data % 2 != 0:
+            data += self.impair
+            len_data += 1
+
+        return list(data), len_data
+          
+class UseNullPlayfairConfig(PlayfairConfig):
+    def __init__(self, duplicated_char: str='²', impair_char: str='\x00'):
+        self.table = [
+            '\x00', '\t', '\n', ' ', '!', '"', '#', '$', '%', '&', "'", '(', ')', '*', '+', ',',
+            '-', '.', '/', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '<',
+            '=', '>', '?', '@', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
+            'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '[', '\\',
+            ']', '^', '_', '`', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l',
+            'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '{', '|',
+            '}', '~', '¡', '¢', '£', '¤', '¥', '¦', '§', '¨', '©', 'ª', '«', '¬', '®', '¯',
+            '°', '±', '²', '³', '´', 'µ', '¶', '·', '¸', '¹', 'º', '»', '¼', '½', '¾', '¿',
+            'À', 'Á', 'Â', 'Ã', 'Ä', 'Å', 'Æ', 'Ç', 'È', 'É', 'Ê', 'Ë', 'Ì', 'Í', 'Î', 'Ï',
+            'Ð', 'Ñ', 'Ò', 'Ó', 'Ô', 'Õ', 'Ö', '×', 'Ø', 'Ù', 'Ú', 'Û', 'Ü', 'Ý', 'Þ', 'ß',
+            'à', 'á', 'â', 'ã', 'ä', 'å', 'æ', 'ç', 'è', 'é', 'ê', 'ë', 'ì', 'í', 'î', 'ï',
+            'ð', 'ñ', 'ò', 'ó', 'ô', 'õ', 'ö', '÷', 'ø', 'ù', 'ú', 'û', 'ü', 'ý', 'þ', 'ÿ'
+        ]
+        self.max_width = 16
+        self.max_height = 12
+        self.impair = impair_char
+        self.duplicated_char = duplicated_char
+            
+            
+class NoNullPlayfairConfig(PlayfairConfig):
+    def __init__(self, duplicated_char: str='²', impair_char: str='$\n'):
+        self.table = [
+            '\n', ' ', '!', '"', '#', '$', '%', '&', "'", '(', ')', '*', '+', ',', '-', '.', '/', '0', '1',
+            '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '<', '=', '>', '?', '@', 'A', 'B', 'C', 'D',
+            'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W',
+            'X', 'Y', 'Z', '[', '\\', ']', '^', '_', '`', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+            'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '{', '|', '}',
+            '~', '¡', '¢', '£', '¤', '¥', '¦', '§', '¨', '©', 'ª', '«', '¬', '®', '¯', '°', '±', '²', '³',
+            '´', 'µ', '¶', '·', '¸', '¹', 'º', '»', '¼', '½', '¾', '¿', 'À', 'Á', 'Â', 'Ã', 'Ä', 'Å', 'Æ',
+            'Ç', 'È', 'É', 'Ê', 'Ë', 'Ì', 'Í', 'Î', 'Ï', 'Ð', 'Ñ', 'Ò', 'Ó', 'Ô', 'Õ', 'Ö', '×', 'Ø', 'Ù',
+            'Ú', 'Û', 'Ü', 'Ý', 'Þ', 'ß', 'à', 'á', 'â', 'ã', 'ä', 'å', 'æ', 'ç', 'è', 'é', 'ê', 'ë', 'ì',
+            'í', 'î', 'ï', 'ð', 'ñ', 'ò', 'ó', 'ô', 'õ', 'ö', '÷', 'ø', 'ù', 'ú', 'û', 'ü', 'ý', 'þ', 'ÿ',
+        ]
+        self.max_width = 19
+        self.max_height = 10
+        self.impair = impair_char
+        self.duplicated_char = duplicated_char
+
+
 # ? =================================================
-
-from base import SymetricCrypto
-
-from playfair_conf import PlayfairConfig, UseNullPlayfairConfig
 
 
 class PlayfairCipher(SymetricCrypto):
