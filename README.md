@@ -30,6 +30,12 @@ pytest
 
 ---
 
+## Introduction
+
+This project explores classical and modern cryptographic techniques through a modular Python-based framework. By implementing ciphers like Playfair, Polybius, and RSA, as well as AES S-boxes and LSB-based steganography, the project demonstrates both theoretical and practical aspects of secure communication. Each algorithm is encapsulated in configurable, reusable components, with a graphical user interface (GUI) built using Tkinter, making the project user-friendly. Additionally, the inclusion of a testing suite ensures reliability. This project is designed for educational purposes, making cryptography accessible and engaging for experimentation.
+
+---
+
 ## Architecture Overview
 
 ### Base Cryptographic Classes (`base.py`)
@@ -115,6 +121,46 @@ Defines a unified structure for cryptographic implementations:
 
 ---
 
+## Configuration Framework
+
+### Strategy Pattern Implementation
+
+This framework leverages the Strategy Pattern to decouple cryptographic logic from configuration details, enabling flexible runtime customization.
+
+### Features
+
+* **Config Classes**:
+  * Encapsulate character sets, padding rules, and grid layouts.
+  * Allow seamless updates without modifying core cryptographic logic.
+
+* **Dynamic Algorithm Customization**:
+  * Supports runtime switching of configurations.
+  * Simplifies experimentation with different modes.
+
+### Benefits
+
+* **Single-Responsibility Principle**:
+  * Keeps cryptographic logic focused on encryption/decryption.
+  * Delegates character handling and grid management to configuration classes.
+
+* **Extensibility**:
+  * Adding new configurations requires minimal changes.
+  * Promotes modularity and reusability.
+
+### Implementation Example
+
+* **Playfair Cipher**:
+  * `playfair_conf.py`: Defines grid logic and character sets.
+  * `playfair_cipher.py`: Operates based on the provided configuration.
+
+* **Polybius Square Cipher**:
+  * `polybius_square_conf.py`: Manages grid layout and character mappings.
+  * `polybius_square_cipher.py`: Encodes/decodes using the configuration.
+
+This approach ensures a clean separation of concerns, making the framework adaptable and maintainable for future enhancements.
+
+---
+
 ## RSA Public-Key Cipher
 
 **File**: `rsa_cipher.py`
@@ -155,6 +201,60 @@ Defines a unified structure for cryptographic implementations:
 * Errors: Handles key format and message size issues gracefully.
 
 ---
+## AES Substitution Boxes (`aes.py`)
+
+### Features
+
+* **Core AES Structure**:
+  * Implements NIST-standard AES (originally Rijndael).
+  * Fixed 128-bit block size.
+  * Three key size options:
+    1. **128-bit**: 10 rounds.
+    2. **192-bit**: 12 rounds.
+    3. **256-bit**: 14 rounds.
+  * Four fundamental transformations:
+    1. `SubBytes`: Non-linear byte substitution using a predefined S-box.
+    2. `ShiftRows`: Cyclic shifting of bytes in each row.
+    3. `MixColumns`: Linear transformation mixing column bytes.
+    4. `AddRoundKey`: XOR with the current round key.
+
+* **Encryption Process**:
+  1. **Key Preparation**:
+     * Expands the initial key into multiple round keys.
+     * Uses byte rotation, S-box substitution, round constants, and previous key material.
+  2. **Rounds**:
+     * **Initial Round**: XOR with the first round key.
+     * **Main Rounds**: SubBytes → ShiftRows → MixColumns → AddRoundKey.
+     * **Final Round**: SubBytes → ShiftRows → AddRoundKey (no MixColumns).
+
+* **Decryption Process**:
+  * Mirrors encryption with inverse transformations:
+    * `InvSubBytes`, `InvShiftRows`, `InvMixColumns`.
+  * Applies round keys in reverse order.
+
+* **CBC Mode Operation**:
+  * **Encryption**:
+    1. Pads plaintext to a multiple of 16 bytes.
+    2. XORs each block with the previous ciphertext block.
+    3. Uses an Initialization Vector (IV) for the first block.
+  * **Decryption**:
+    1. Decrypts each block normally.
+    2. XORs the result with the previous ciphertext block.
+    3. Removes padding from the final output.
+
+### Security & Design
+
+* **HMAC-SHA256**: Ensures message authentication.
+* **Random IV Generation**: Enhances security for each encryption.
+* **PKCS#7 Padding**: Handles incomplete blocks.
+
+### Benefits
+
+* Military-grade symmetric encryption.
+* Configurable key lengths for flexibility.
+* Robust authentication and padding mechanisms.
+
+---
 
 ## Steganography System
 
@@ -179,6 +279,8 @@ Defines a unified structure for cryptographic implementations:
 | Visual      | No noticeable quality loss            |
 | Statistical | Vulnerable without masking/encryption |
 
+![screenshot](./img/st.png)
+
 ---
 
 ## Encryption vs. Steganography
@@ -198,4 +300,10 @@ Defines a unified structure for cryptographic implementations:
 ![screenshot 2](./img/s2.png)
 ![screenshot 5](./img/s5.png)
 
+---
 
+## Conclusion
+
+The project successfully integrates diverse cryptographic methods within a structured, extensible codebase. From historical ciphers to public-key encryption and steganographic techniques, each implementation emphasizes clarity, security, and adaptability. The Tkinter-based GUI simplifies user interaction with the cryptographic processes, while the backend logic ensures robust encryption standards. Through this work, we gain deeper insights into the principles, design decisions, and real-world applications of cryptography, highlighting its critical role in securing digital information.
+
+---
