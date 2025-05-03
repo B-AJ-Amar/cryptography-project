@@ -201,7 +201,9 @@ This approach ensures a clean separation of concerns, making the framework adapt
 * Errors: Handles key format and message size issues gracefully.
 
 ---
-## AES Substitution Boxes (`aes.py`)
+## AES Substitution Boxes
+
+**File**: `aes.py`
 
 ### Features
 
