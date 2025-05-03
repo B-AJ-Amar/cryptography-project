@@ -1,5 +1,16 @@
 # Cryptography Project – Report
 
+## Group Information
+
+### Group: 01
+
+### Contributors:
+- **Bouakaz Amar Abdeldjalil**
+- **Bouhouita Guèrmech Hanna**
+- **Cheikh Bassa Fairouz**
+ 
+--- 
+
 ## Project Setup
 
 ### Installation
@@ -308,4 +319,6 @@ This approach ensures a clean separation of concerns, making the framework adapt
 ## Conclusion
 
 The project successfully integrates diverse cryptographic methods within a structured, extensible codebase. From historical ciphers to public-key encryption and steganographic techniques, each implementation emphasizes clarity, security, and adaptability. The Tkinter-based GUI simplifies user interaction with the cryptographic processes, while the backend logic ensures robust encryption standards. Through this work, we gain deeper insights into the principles, design decisions, and real-world applications of cryptography, highlighting its critical role in securing digital information.
+
+
 
