@@ -1,2 +1,3 @@
 ruff
 argon2
+pytest
