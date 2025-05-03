@@ -18,6 +18,8 @@ from crpyto.polybius_square.polybius_square_chipher import (
 from crpyto.rsa.rsa_cipher import RSA_Cipher
 from steganography.image import SteganographyLSBImage
 
+from crpyto.AES.aes import *
+
 # Custom color scheme
 COLORS = {
     'background': '#2d2d2d',
@@ -654,7 +656,117 @@ copy_steg_button.grid(row=5, column=1, pady=5, sticky='e')
 
 # ===== EAS Tab (Placeholder) =====
 eas_tab = ttk.Frame(notebook)
-ttk.Label(eas_tab, text="EAS Cipher - Coming Soon", font=title_font).pack(expand=True)
+
+eas_frame = ttk.LabelFrame(eas_tab, text=" AES Encryption ", padding=15)
+eas_frame.pack(expand=True, fill='both', padx=10, pady=10)
+
+# Key input
+ttk.Label(eas_frame, text="Key (16/24/32 chars):", font=section_font).grid(row=0, column=0, padx=5, pady=5, sticky='w')
+aes_key_entry = ttk.Entry(eas_frame, width=50)
+aes_key_entry.grid(row=0, column=1, padx=5, pady=5, sticky='ew')
+
+# IV input
+ttk.Label(eas_frame, text="IV (16 bytes, optional):", font=section_font).grid(row=1, column=0, padx=5, pady=5, sticky='w')
+aes_iv_entry = ttk.Entry(eas_frame, width=50)
+aes_iv_entry.grid(row=1, column=1, padx=5, pady=5, sticky='ew')
+
+# Input text
+ttk.Label(eas_frame, text="Input Text:", font=section_font).grid(row=2, column=0, padx=5, pady=5, sticky='w')
+aes_input_entry = tk.Text(eas_frame, width=50, height=5, 
+                          bg=COLORS['entry_bg'], fg=COLORS['text'],
+                          insertbackground=COLORS['text'],
+                          wrap=tk.WORD)
+aes_input_entry.grid(row=2, column=1, padx=5, pady=5, sticky='ew')
+
+# Buttons
+aes_button_frame = ttk.Frame(eas_frame)
+aes_button_frame.grid(row=3, column=0, columnspan=2, pady=10)
+
+def handle_aes_encrypt():
+    key = aes_key_entry.get().encode('utf-8')
+    iv = aes_iv_entry.get().encode('utf-8') if aes_iv_entry.get() else generate_iv()
+    plaintext = aes_input_entry.get("1.0", tk.END).strip().encode('utf-8')
+    
+    if len(key) not in (16, 24, 32):
+        messagebox.showerror("Error", "Key must be 16, 24, or 32 characters!", parent=eas_tab)
+        return
+    if not plaintext:
+        messagebox.showerror("Error", "Input text cannot be empty!", parent=eas_tab)
+        return
+    
+    try:
+        aes = AES(key)
+        ciphertext = aes.encrypt_cbc(plaintext, iv)
+        hmac = aes.hmac_sha256(key, ciphertext)
+        full_output = iv + hmac + ciphertext
+        aes_result_text.delete("1.0", tk.END)
+        aes_result_text.insert(tk.END, custom_b64encode(full_output))
+    except Exception as e:
+        messagebox.showerror("Error", str(e), parent=eas_tab)
+
+def handle_aes_decrypt():
+    key = aes_key_entry.get().encode('utf-8')
+    full_input = custom_b64decode(aes_input_entry.get("1.0", tk.END).strip())
+    
+    if len(key) not in (16, 24, 32):
+        messagebox.showerror("Error", "Key must be 16, 24, or 32 characters!", parent=eas_tab)
+        return
+    if not full_input:
+        messagebox.showerror("Error", "Input text cannot be empty!", parent=eas_tab)
+        return
+    
+    try:
+        iv = full_input[:16]
+        hmac = full_input[16:48]
+        ciphertext = full_input[48:]
+        
+        aes = AES(key)
+        expected_hmac = aes.hmac_sha256(key, ciphertext)
+        if hmac != expected_hmac:
+            messagebox.showerror("Error", "HMAC verification failed! Message may be corrupted.", parent=eas_tab)
+            return
+        
+        plaintext = aes.decrypt_cbc(ciphertext, iv)
+        aes_result_text.delete("1.0", tk.END)
+        aes_result_text.insert(tk.END, plaintext.decode('utf-8'))
+    except Exception as e:
+        messagebox.showerror("Error", str(e), parent=eas_tab)
+
+def clear_aes_inputs():
+    aes_key_entry.delete(0, tk.END)
+    aes_iv_entry.delete(0, tk.END)
+    aes_input_entry.delete("1.0", tk.END)
+    aes_result_text.delete("1.0", tk.END)
+
+aes_encrypt_button = ttk.Button(aes_button_frame, text="Encrypt", command=handle_aes_encrypt, style='Accent.TButton')
+aes_encrypt_button.pack(side='left', padx=5)
+
+aes_decrypt_button = ttk.Button(aes_button_frame, text="Decrypt", command=handle_aes_decrypt, style='Accent.TButton')
+aes_decrypt_button.pack(side='left', padx=5)
+
+aes_clear_button = ttk.Button(aes_button_frame, text="Clear All", command=clear_aes_inputs)
+aes_clear_button.pack(side='left', padx=5)
+
+# Result
+ttk.Label(eas_frame, text="Result:", font=section_font).grid(row=4, column=0, padx=5, pady=5, sticky='nw')
+aes_result_text = tk.Text(eas_frame, width=50, height=8, 
+                          bg=COLORS['entry_bg'], fg=COLORS['text'],
+                          insertbackground=COLORS['text'],
+                          wrap=tk.WORD)
+aes_result_text.grid(row=4, column=1, padx=5, pady=5, sticky='ew')
+
+# Copy button
+def copy_aes_result():
+    result = aes_result_text.get("1.0", tk.END).strip()
+    if result:
+        root.clipboard_clear()
+        root.clipboard_append(result)
+        messagebox.showinfo("Copied", "Result copied to clipboard!", parent=eas_tab)
+    else:
+        messagebox.showwarning("Empty", "No result to copy", parent=eas_tab)
+
+copy_aes_button = ttk.Button(eas_frame, text="Copy Result", command=copy_aes_result)
+copy_aes_button.grid(row=5, column=1, pady=5, sticky='e')
 
 # Add all tabs
 notebook.add(playfair_tab, text="Playfair")
