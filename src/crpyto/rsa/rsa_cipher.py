@@ -18,7 +18,7 @@ parent = os.path.dirname(current)
 
 # Adds that parent directory to Python's search path
 sys.path.append(parent)
-# ? =================================================
+# ? =================================================                                                                                   
 
 # Import base crypto class 
 from base import AsymetricCrypto
@@ -26,20 +26,26 @@ from base import AsymetricCrypto
 # Standard library imports
 import random
 import math
-from typing import Tuple
+from typing import Tuple, List
 
 class RSA_Cipher(AsymetricCrypto):
     def __init__(
             self,
-            private_key=None, 
-            public_key=None, 
+            private_key="", 
+            public_key="", 
             key_size=2048
     ):
         self.key_size = key_size
-        super().__init__(None, None)
-        if not self.public_key:
+        super().__init__(private_key, public_key)
+        if not self.public_key and not self.private_key:
             self.generate_key()
 
+    def can_encrypt(self):
+        return bool(self.public_key)
+    
+    def can_decrypt(self):
+        return bool(self.private_key)
+    
     def generate_key(self) -> Tuple[str, str]:
         p = self._generate_prime(self.key_size // 2)
         q = self._generate_prime(self.key_size // 2)
@@ -49,36 +55,77 @@ class RSA_Cipher(AsymetricCrypto):
         e = 65537 # commonly used public exponent
         d = pow(e, -1, phi_n) # private exponent d = e^(-1) mod φ(n)
         
-        public_key = f"{n},{e}"
-        private_key = f"{n},{d}"
+        self.public_key = f"{n},{e}"
+        self.private_key = f"{n},{d}"
 
-        return public_key, private_key
+        return self.public_key, self.private_key
 
     def encrypt(
             self, 
             plaintext: str) -> str:
-        n, e = map(int, self.public_key.split(","))
-        plaintext_int = int.from_bytes(plaintext.encode('utf-8'), 'big')
-        if plaintext_int >= n:
-           raise ValueError("message too long for key size")
-        # c = m^e mod n
-        ciphertext_int = pow(plaintext_int, e, n)  
-        ciphertext = str(ciphertext_int) 
+        if not plaintext:
+            raise ValueError("plaintext can't be empty")
+        if not self.can_encrypt():
+            raise ValueError("no public key available for encryption")
+        
+        n, e = self._parse_key(self.public_key)
+        max_chunk_size = self._calculate_max_chunk_size(n)
+        plaintext_bytes = plaintext.encode('utf-8')
+        chunks = self._split_into_chunks(plaintext_bytes, max_chunk_size)
+        encrypted_chunks = [] 
+        for chunk in chunks:
+            plaintext_int = int.from_bytes(chunk, 'big')
+            if plaintext_int >= n:
+                raise ValueError("message too long for key size")
+            # c = m^e mod n
+            ciphertext_int = pow(plaintext_int, e, n)  
+            encrypted_chunks.append(str(ciphertext_int))
 
-        return ciphertext
+        cyphertexet = "|".join(encrypted_chunks)
+        return  cyphertexet
     
     def decrypt(
             self, 
             ciphertext: str) -> str:
-        n, d = map(int, self.private_key.split(","))
-        ciphertext_int = int(ciphertext)
-         # m = c^d mod n
-        plaintext_int = pow(ciphertext_int, d, n)
-        plaintext = plaintext_int.to_bytes((plaintext_int.bit_length() + 7) // 8, 'big').decode('utf-8') 
-
+        if not ciphertext:
+            raise ValueError("ciphertext can't be empty")
+        if not self.can_decrypt():
+            raise ValueError("No private key available for decryption")
+        if not all(chunk.isdigit() for chunk in ciphertext.split("|")):
+            raise ValueError("invalid format")
+        
+        n, d = self._parse_key(self.private_key)
+        encrypted_chunks = ciphertext.split("|")
+        decrypted_chunks = []
+        for chunk in encrypted_chunks:
+            ciphertext_int = int(chunk)
+            # m = c^d mod n
+            plaintext_int = pow(ciphertext_int, d, n)
+            chunk_bytes = plaintext_int.to_bytes(
+                max(1, (plaintext_int.bit_length() + 7) // 8),'big')
+            decrypted_chunks.append(chunk_bytes)
+        
+        plaintext = b''.join(decrypted_chunks).decode('utf-8')
         return plaintext
 
-    # Helper methods
+    # helper methods
+    def _parse_key(self, 
+                   key_str: str) -> Tuple[int, int]:
+        try:
+            return tuple(map(int, key_str.split(',')))
+        except:
+            raise ValueError("invalid format")
+
+    def _calculate_max_chunk_size(self,
+                                   n: int) -> int:
+        return (n.bit_length() - 1) // 8  
+
+    def _split_into_chunks(self,
+                            data: bytes,
+                              chunk_size: int) -> List[bytes]:
+        return [data[i:i + chunk_size] 
+                for i in range(0, len(data), chunk_size)]
+    
     def _generate_prime(self, bits: int) -> int:
         small_primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37]
         while True:
@@ -121,15 +168,14 @@ class RSA_Cipher(AsymetricCrypto):
         return True # prime
 
 if __name__ == "__main__":
-    rsa = RSA_Cipher(key_size=2048) 
-    public_key, private_key = rsa.generate_key()
+  rsa = RSA_Cipher(key_size=2048) 
 
-    # print("public key:", public_key)
-    # print("private key:", private_key)
+  print("public key:", rsa.public_key)
+  print("private key:", rsa.private_key)
 
-    message = "test"
-    encrypted = rsa.encrypt(message)
-    print("encrypted:", encrypted)
+  message = "test"
+  encrypted = rsa.encrypt(message)
+  print("encrypted:", encrypted)
 
-    decrypted = rsa.decrypt(encrypted)
-    print("decrypted:", decrypted)
+  decrypted = rsa.decrypt(encrypted)
+  print("decrypted:", decrypted)
