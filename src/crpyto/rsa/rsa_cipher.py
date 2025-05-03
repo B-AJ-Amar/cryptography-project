@@ -1,9 +1,12 @@
 """ 
 RSA Cipher Implementation
-Current Features:
-- Basic RSA encryption/decryption
-- 2048-bit key generation by default
-- Miller-Rabin primality test
+
+Features:
+- RSA encryption and decryption
+- Automatic key generation 
+- Supports variable key sizes (default: 2048 bits)
+- Handles large messages by splitting into chunks
+- UTF-8 encoding for plaintext
 
 """
 # ? this part will allow me to import from the parent directory
