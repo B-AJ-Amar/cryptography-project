@@ -300,6 +300,7 @@ This approach ensures a clean separation of concerns, making the framework adapt
 
 ![screenshot 1](./img/s1.png)
 ![screenshot 2](./img/s2.png)
+![screenshot 4](./img/s4.png)
 ![screenshot 5](./img/s5.png)
 
 ---
@@ -308,4 +309,3 @@ This approach ensures a clean separation of concerns, making the framework adapt
 
 The project successfully integrates diverse cryptographic methods within a structured, extensible codebase. From historical ciphers to public-key encryption and steganographic techniques, each implementation emphasizes clarity, security, and adaptability. The Tkinter-based GUI simplifies user interaction with the cryptographic processes, while the backend logic ensures robust encryption standards. Through this work, we gain deeper insights into the principles, design decisions, and real-world applications of cryptography, highlighting its critical role in securing digital information.
 
----
