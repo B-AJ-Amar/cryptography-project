@@ -3,7 +3,12 @@ from tkinter import ttk, messagebox, filedialog
 from tkinter.font import Font
 
 # Import your cipher modules
-from crpyto.playfair.playfair_chipher import PlayfairCipher
+from crpyto.playfair.playfair_chipher import (
+    DefaultPlayfairConfig,
+    UseNullPlayfairConfig,
+    NoNullPlayfairConfig,
+    PlayfairCipher
+)
 from crpyto.polybius_square.polybius_square_chipher import (
     DefaultPolybiusSquareConfig,
     UseNullPolybiusSquareConfig,
@@ -110,22 +115,44 @@ playfair_tab = ttk.Frame(notebook)
 playfair_frame = ttk.LabelFrame(playfair_tab, text=" Playfair Cipher ", padding=15)
 playfair_frame.pack(expand=True, fill='both', padx=10, pady=10)
 
+# Configuration
+ttk.Label(playfair_frame, text="Configuration:", font=section_font).grid(row=0, column=0, padx=5, pady=5, sticky='w')
+playfair_config_var = tk.StringVar(value="Default")
+
+def update_playfair_config(*args):
+    global playfair_config
+    selected_config = playfair_config_var.get()
+    if selected_config == "Default":
+        playfair_config = DefaultPlayfairConfig()
+    elif selected_config == "Use Null":
+        playfair_config = UseNullPlayfairConfig()
+    elif selected_config == "No Null":
+        playfair_config = NoNullPlayfairConfig()
+
+playfair_config = DefaultPlayfairConfig()
+playfair_config_var.trace("w", update_playfair_config)
+
+playfair_config_dropdown = ttk.Combobox(playfair_frame, textvariable=playfair_config_var, 
+                                        values=["Default", "Use Null", "No Null"], 
+                                        state="readonly")
+playfair_config_dropdown.grid(row=0, column=1, padx=5, pady=5, sticky='ew')
+
 # Key input
-ttk.Label(playfair_frame, text="Key:", font=section_font).grid(row=0, column=0, padx=5, pady=5, sticky='w')
+ttk.Label(playfair_frame, text="Key:", font=section_font).grid(row=1, column=0, padx=5, pady=5, sticky='w')
 playfair_key_entry = ttk.Entry(playfair_frame, width=50)
-playfair_key_entry.grid(row=0, column=1, padx=5, pady=5, sticky='ew')
+playfair_key_entry.grid(row=1, column=1, padx=5, pady=5, sticky='ew')
 
 # Input text
-ttk.Label(playfair_frame, text="Input Text:", font=section_font).grid(row=1, column=0, padx=5, pady=5, sticky='w')
+ttk.Label(playfair_frame, text="Input Text:", font=section_font).grid(row=2, column=0, padx=5, pady=5, sticky='w')
 playfair_input_entry = tk.Text(playfair_frame, width=50, height=5, 
                               bg=COLORS['entry_bg'], fg=COLORS['text'],
                               insertbackground=COLORS['text'],
                               wrap=tk.WORD)
-playfair_input_entry.grid(row=1, column=1, padx=5, pady=5, sticky='ew')
+playfair_input_entry.grid(row=2, column=1, padx=5, pady=5, sticky='ew')
 
 # Buttons
-button_frame = ttk.Frame(playfair_frame)
-button_frame.grid(row=2, column=0, columnspan=2, pady=10)
+playfair_button_frame = ttk.Frame(playfair_frame)
+playfair_button_frame.grid(row=3, column=0, columnspan=2, pady=10)
 
 def handle_playfair_encrypt():
     key = playfair_key_entry.get()
@@ -139,7 +166,7 @@ def handle_playfair_encrypt():
         return
     
     try:
-        cipher = PlayfairCipher(key)
+        cipher = PlayfairCipher(key, playfair_config)
         encrypted_text = cipher.encrypt(plaintext)
         playfair_result_text.delete("1.0", tk.END)
         playfair_result_text.insert(tk.END, encrypted_text)
@@ -158,7 +185,7 @@ def handle_playfair_decrypt():
         return
     
     try:
-        cipher = PlayfairCipher(key)
+        cipher = PlayfairCipher(key, playfair_config)
         decrypted_text = cipher.decrypt(ciphertext)
         playfair_result_text.delete("1.0", tk.END)
         playfair_result_text.insert(tk.END, decrypted_text)
@@ -169,23 +196,24 @@ def clear_playfair_inputs():
     playfair_key_entry.delete(0, tk.END)
     playfair_input_entry.delete("1.0", tk.END)
     playfair_result_text.delete("1.0", tk.END)
+    playfair_config_var.set("Default")
 
-playfair_encrypt_button = ttk.Button(button_frame, text="Encrypt", command=handle_playfair_encrypt, style='Accent.TButton')
+playfair_encrypt_button = ttk.Button(playfair_button_frame, text="Encrypt", command=handle_playfair_encrypt, style='Accent.TButton')
 playfair_encrypt_button.pack(side='left', padx=5)
 
-playfair_decrypt_button = ttk.Button(button_frame, text="Decrypt", command=handle_playfair_decrypt, style='Accent.TButton')
+playfair_decrypt_button = ttk.Button(playfair_button_frame, text="Decrypt", command=handle_playfair_decrypt, style='Accent.TButton')
 playfair_decrypt_button.pack(side='left', padx=5)
 
-playfair_clear_button = ttk.Button(button_frame, text="Clear All", command=clear_playfair_inputs)
+playfair_clear_button = ttk.Button(playfair_button_frame, text="Clear All", command=clear_playfair_inputs)
 playfair_clear_button.pack(side='left', padx=5)
 
 # Result
-ttk.Label(playfair_frame, text="Result:", font=section_font).grid(row=3, column=0, padx=5, pady=5, sticky='nw')
+ttk.Label(playfair_frame, text="Result:", font=section_font).grid(row=4, column=0, padx=5, pady=5, sticky='nw')
 playfair_result_text = tk.Text(playfair_frame, width=50, height=8, 
                               bg=COLORS['entry_bg'], fg=COLORS['text'],
                               insertbackground=COLORS['text'],
                               wrap=tk.WORD)
-playfair_result_text.grid(row=3, column=1, padx=5, pady=5, sticky='ew')
+playfair_result_text.grid(row=4, column=1, padx=5, pady=5, sticky='ew')
 
 # Copy button
 def copy_playfair_result():
@@ -197,8 +225,8 @@ def copy_playfair_result():
     else:
         messagebox.showwarning("Empty", "No result to copy", parent=playfair_tab)
 
-copy_button = ttk.Button(playfair_frame, text="Copy Result", command=copy_playfair_result)
-copy_button.grid(row=4, column=1, pady=5, sticky='e')
+copy_playfair_button = ttk.Button(playfair_frame, text="Copy Result", command=copy_playfair_result)
+copy_playfair_button.grid(row=5, column=1, pady=5, sticky='e')
 
 # ===== Polybius Square Tab =====
 polybius_tab = ttk.Frame(notebook)
