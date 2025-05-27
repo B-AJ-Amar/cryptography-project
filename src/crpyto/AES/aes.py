@@ -1,3 +1,5 @@
+#SubBytes : Substitution non-linéaire byte-à-byte via une S-box (boîte de substitution).
+
 s_box = (
     0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76,
     0xCA, 0x82, 0xC9, 0x7D, 0xFA, 0x59, 0x47, 0xF0, 0xAD, 0xD4, 0xA2, 0xAF, 0x9C, 0xA4, 0x72, 0xC0,
@@ -17,6 +19,7 @@ s_box = (
     0x8C, 0xA1, 0x89, 0x0D, 0xBF, 0xE6, 0x42, 0x68, 0x41, 0x99, 0x2D, 0x0F, 0xB0, 0x54, 0xBB, 0x16,
 )
 
+#inv_s_box: Inverse de s_box, utilisée pour déchiffrer (InvSubBytes)
 inv_s_box = (
     0x52, 0x09, 0x6A, 0xD5, 0x30, 0x36, 0xA5, 0x38, 0xBF, 0x40, 0xA3, 0x9E, 0x81, 0xF3, 0xD7, 0xFB,
     0x7C, 0xE3, 0x39, 0x82, 0x9B, 0x2F, 0xFF, 0x87, 0x34, 0x8E, 0x43, 0x44, 0xC4, 0xDE, 0xE9, 0xCB,
@@ -51,11 +54,12 @@ def sub_bytes(s):
             s[i][j] = s_box[s[i][j]]
 
 def inv_sub_bytes(s):
-    """Apply inverse SubBytes transformation using the inverse S-box."""
+    """Remplace chaque élément du bloc s (une matrice 4x4) avec la valeur correspondante de la s_box"""
     for i in range(4):
         for j in range(4):
             s[i][j] = inv_s_box[s[i][j]]
 
+#ShiftRows : Décalage circulaire des lignes.
 def shift_rows(s):
     """Apply ShiftRows transformation (left shifts)."""
     s[0][1], s[1][1], s[2][1], s[3][1] = s[1][1], s[2][1], s[3][1], s[0][1]
@@ -69,7 +73,7 @@ def inv_shift_rows(s):
     s[0][3], s[1][3], s[2][3], s[3][3] = s[1][3], s[2][3], s[3][3], s[0][3]
 
 def add_round_key(s, k):
-    """Add round key to the state matrix."""
+    """AddRoundKey : XOR avec une sous-clé dérivée de la clé principale"""
     for i in range(4):
         for j in range(4):
             s[i][j] ^= k[i][j]
@@ -86,7 +90,7 @@ def mix_single_column(a):
     a[3] ^= t ^ xtime(a[3] ^ u)
 
 def mix_columns(s):
-    """Apply MixColumns transformation."""
+    """MixColumns : Mélange linéaire des colonnes"""
     for i in range(4):
         mix_single_column(s[i])
 
@@ -217,7 +221,9 @@ class AES:
             plaintext += xor_bytes(decrypted, prev)
             prev = block
         return unpad(plaintext)
+    
 
+#HMAC = H((K ⊕ opad) || H((K ⊕ ipad) || message))
     @staticmethod
     def hmac_sha256(key, message):
         """HMAC-SHA256 implementation."""
@@ -232,7 +238,7 @@ class AES:
         return sha256(o_key_pad + sha256(i_key_pad + message))
 
 def generate_iv():
-    """Generate a random initialization vector."""
+    """Generate a random initialization vector"""
     import os
     return os.urandom(16)
 
@@ -295,6 +301,7 @@ def unpad(data):
 
 
 class AES:
+    #This maps the key length in bytes to the number of AES rounds
     rounds_by_key_size = {16: 10, 24: 12, 32: 14}
 
     def __init__(self, master_key):
@@ -304,7 +311,7 @@ class AES:
         self._key_matrices = self._expand_key(master_key)
 
     def _expand_key(self, master_key):
-        key_columns = bytes2matrix(master_key)
+        key_columns = [list(master_key[i:i+4]) for i in range(0, len(master_key), 4)]
         iteration_size = len(master_key) // 4
         i = 1
 
