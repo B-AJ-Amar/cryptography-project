@@ -209,7 +209,7 @@ This approach ensures a clean separation of concerns, making the framework adapt
 
 * Key format: `n,e` or `n,d` (comma-separated integers).
 * Message flow: UTF-8 → bytes → int chunks → RSA.
-* Errors: Handles key format and message size issues gracefully.
+* Errors: Handles key format and message size issues.
 
 ---
 ## AES Substitution Boxes
